@@ -1,146 +1,132 @@
 # Mail Agent
 
-Agente personal de correo para un homelab: indexa varias cuentas IMAP en
-PostgreSQL y responde preguntas en lenguaje natural por Telegram, usando
-Claude con herramientas que **solo consultan la base de datos**. Nunca envía,
-mueve, marca ni borra correos.
+A personal email agent for a homelab: it indexes several IMAP accounts into
+PostgreSQL and answers natural-language questions over Telegram, using Claude
+with tools that **only query the database**. It never sends, moves, flags or
+deletes email.
 
-> 🚧 **En desarrollo.** Diseño, esquema de base de datos y definición de
-> herramientas terminados (fase 1). Ver [estado del proyecto](#estado-del-proyecto).
+> 🚧 **Work in progress.** Design, database schema and tool definitions are
+> done (phase 1). See [project status](#project-status).
 
-## Qué hace
+## What it does
 
-Ejemplos de preguntas que responde:
+Example questions it answers:
 
-- *"¿Me ha respondido alguien al correo que envié el lunes sobre la oferta de ACME?"*
-- *"Búscame la factura de la luz de agosto"* → responde y ofrece el PDF para descargar
-- *"¿Qué correos importantes he recibido hoy?"* / *"Resúmeme el día"*
-- *"¿Quién no me ha contestado esta semana?"*
+- *"Did anyone reply to the email I sent on Monday about the ACME job offer?"*
+- *"Find my electricity bill from August"* → answers and offers the PDF for download
+- *"What important emails did I get today?"* / *"Summarize my day"*
+- *"Who hasn't replied to me this week?"*
 
-Responde en el idioma en que le escribas (castellano, catalán o inglés).
+It replies in whatever language you write in (Spanish, Catalan or English).
 
-## Arquitectura
+## Architecture
 
 ```mermaid
 flowchart LR
-    subgraph cuentas["Cuentas IMAP"]
+    subgraph accounts["IMAP accounts"]
         G[Gmail]
         I[iCloud]
         M[Movistar]
     end
 
     subgraph homelab["Homelab · Docker Compose"]
-        S["Sincronizador<br/>cada 15 min · sin IA"]
-        DB[("PostgreSQL<br/>full-text + trigramas")]
-        A["Agente<br/>bucle de tool use"]
-        T["Bot de Telegram<br/>long polling"]
+        S["Synchronizer<br/>every 15 min · no AI"]
+        DB[("PostgreSQL<br/>full-text + trigrams")]
+        A["Agent<br/>tool-use loop"]
+        T["Telegram bot<br/>long polling"]
     end
 
     C["Claude API<br/>Haiku"]
-    U((Usuario))
+    U((User))
 
-    G & I & M -- "IMAP solo lectura<br/>(EXAMINE, BODY.PEEK)" --> S
+    G & I & M -- "read-only IMAP<br/>(EXAMINE, BODY.PEEK)" --> S
     S --> DB
-    A -- "5 herramientas<br/>de solo consulta" --> DB
+    A -- "5 read-only<br/>tools" --> DB
     A <--> C
     T <--> A
     U <--> T
-    T -. "adjuntos bajo demanda<br/>(sin pasar por Claude)" .-> S
+    T -. "attachments on demand<br/>(bypassing Claude)" .-> S
 ```
 
-Tres piezas en un único servicio Spring Boot:
+Three components in a single Spring Boot service:
 
-1. **Sincronizador** — lee INBOX y Enviados de cada cuenta en solo lectura y
-   los guarda en Postgres de forma incremental (UID/UIDVALIDITY) e
-   idempotente. Limpia el HTML, recorta citas y firmas, extrae el texto de los
-   PDF adjuntos y reconcilia los borrados una vez al día.
-2. **Agente** — bucle de tool use implementado a mano con el SDK oficial de
-   Anthropic para Java, con límite de iteraciones, presupuesto diario y
-   registro de tokens y coste por petición.
-3. **Bot de Telegram** — interfaz con lista blanca de chat ID, historial de
-   conversación persistido y botones para ver correos y descargar adjuntos.
+1. **Synchronizer** — reads the INBOX and Sent folders of each account in
+   read-only mode and stores them in Postgres incrementally (UID/UIDVALIDITY)
+   and idempotently. It cleans up HTML, strips quoted replies and signatures,
+   extracts text from PDF attachments and reconciles deletions once a day.
+2. **Agent** — a hand-written tool-use loop on top of Anthropic's official
+   Java SDK, with an iteration cap, a daily budget, and token and cost
+   tracking per request.
+3. **Telegram bot** — the user interface, with a chat ID allowlist, persisted
+   conversation history, and buttons to view emails and download attachments.
 
-### Herramientas del agente
+### Agent tools
 
-| Herramienta | Para qué sirve |
+| Tool | Purpose |
 |---|---|
-| `search_emails` | Búsqueda combinando remitente, destinatario, asunto, texto completo, fechas, dirección, no leídos y adjuntos |
-| `get_email` | Correo completo (sin citas ni firma) y lista de adjuntos |
-| `get_thread` | Hilo reconstruido con `Message-ID` / `In-Reply-To` / `References`, también entre cuentas distintas |
-| `find_unanswered` | Correos enviados que nadie ha respondido todavía |
-| `get_day_digest` | Material para resumir un día: totales, importantes y resto agrupado por remitente |
+| `search_emails` | Search by sender, recipient, subject, full text, dates, direction, unread status and attachments |
+| `get_email` | Full email (without quotes or signature) plus its attachment list |
+| `get_thread` | Thread rebuilt from `Message-ID` / `In-Reply-To` / `References`, even across accounts |
+| `find_unanswered` | Sent emails that nobody has replied to yet |
+| `get_day_digest` | Material to summarize a day: totals, important emails, and the rest grouped by sender |
 
-Las definiciones (JSON Schema) están en
+The definitions (JSON Schema) live in
 [`src/main/resources/agent/tools`](src/main/resources/agent/tools).
 
-## Seguridad
+## Security
 
-El contenido de un correo lo escribe cualquiera, así que el diseño parte de que
-**puede contener prompt injection** y limita lo que un atacante podría
-conseguir:
+Anyone can write an email, so the design assumes that **any email may contain
+a prompt injection** and limits what an attacker could achieve:
 
-- **Solo lectura de extremo a extremo.** Las carpetas IMAP se abren con
-  `READ_ONLY` y los cuerpos se leen con `BODY.PEEK`. El agente no tiene
-  ninguna herramienta que escriba: consulta Postgres, nunca IMAP en directo.
-- **Remitentes protegidos.** Los correos de dominios excluidos (bancos,
-  salud…) se indexan pero su contenido **nunca se envía a Claude**: el modelo
-  solo ve un ID y una fecha, y el usuario los abre con un botón que lee
-  directamente de la base de datos.
-- **Sin canal de exfiltración.** Las respuestas se envían en texto plano y sin
-  vistas previas de enlaces, para que una URL generada por una injection no
-  pueda filtrar datos a terceros.
-- **Referencias validadas.** El modelo solo puede ofrecer correos o adjuntos
-  que una herramienta le haya devuelto en esa misma petición.
-- **Sin exposición a internet.** El bot usa long polling (no abre puertos) y
-  solo atiende chat IDs autorizados; el resto del acceso es por WireGuard.
-- **Límites de coste.** Máximo de iteraciones por pregunta y presupuesto
-  diario en dólares; cada ejecución queda auditada con sus llamadas a
-  herramientas.
+- **Read-only end to end.** IMAP folders are opened `READ_ONLY` and bodies are
+  fetched with `BODY.PEEK`. The agent has no tool that writes anything: it
+  queries Postgres, never IMAP directly.
+- **Protected senders.** Emails from excluded domains (banks, healthcare…) are
+  indexed, but their content is **never sent to Claude**: the model only sees
+  an ID and a date, and the user opens them with a button that reads straight
+  from the database.
+- **No exfiltration channel.** Replies are sent as plain text with link
+  previews disabled, so a URL produced by an injection cannot leak data to a
+  third party.
+- **Validated references.** The model can only offer emails or attachments
+  that a tool returned within that same request.
+- **Not exposed to the internet.** The bot uses long polling (no open ports)
+  and only answers allowlisted chat IDs; any other access goes through
+  WireGuard.
+- **Cost limits.** A maximum number of iterations per question and a daily
+  budget in dollars; every run is audited along with its tool calls.
 
-## Stack
+## Tech stack
 
 | | |
 |---|---|
-| Lenguaje y framework | Java 25 · Spring Boot 4.1 |
-| Persistencia | PostgreSQL 17 (`unaccent`, `pg_trgm`, tsvector) · Flyway · `JdbcClient` |
-| Correo | Eclipse Angus Mail (Jakarta Mail) · Jsoup · Apache PDFBox |
-| IA | SDK oficial de Anthropic para Java · Claude Haiku 4.5 (configurable) |
-| Interfaz | TelegramBots (long polling) |
-| Tests | JUnit 5 · Mockito · AssertJ · Testcontainers · GreenMail · ArchUnit |
-| Despliegue | Docker · Docker Compose |
+| Language & framework | Java 25 · Spring Boot 4.1 |
+| Persistence | PostgreSQL 17 (`unaccent`, `pg_trgm`, tsvector) · Flyway · `JdbcClient` |
+| Email | Eclipse Angus Mail (Jakarta Mail) · Jsoup · Apache PDFBox |
+| AI | Anthropic Java SDK · Claude Haiku 4.5 (configurable) |
+| Interface | TelegramBots (long polling) |
+| Testing | JUnit 5 · Mockito · AssertJ · Testcontainers · GreenMail · ArchUnit |
+| Deployment | Docker · Docker Compose |
 
-## Diseño
+## Design
 
-Arquitectura hexagonal ligera, un único módulo Maven con cuatro contextos:
+Lightweight hexagonal architecture in a single Maven module with four bounded
+contexts:
 
 ```
 dev.perecollet.mailagent
-├── mail/       consultas sobre el correo indexado (lo que usan las herramientas)
-├── sync/       ingesta IMAP → Postgres
-├── agent/      bucle de tool use, conversaciones y coste
-└── telegram/   interfaz de usuario
+├── mail/       queries over the indexed mailbox (what the tools use)
+├── sync/       IMAP → Postgres ingestion
+├── agent/      tool-use loop, conversations and cost tracking
+└── telegram/   user interface
 ```
 
-Cada contexto separa `domain` (sin frameworks), `application` (casos de uso y
-puertos) y `adapter`. Las reglas de dependencia se verifican con ArchUnit.
+Each context separates `domain` (framework-free), `application` (use cases and
+ports) and `adapter`. Dependency rules are enforced with ArchUnit.
 
-Las decisiones de diseño, el esquema de base de datos y el funcionamiento de
-cada pieza están explicados en [`docs/design.md`](docs/design.md).
+Design decisions, the database schema and how each component works are
+explained in [`docs/design.md`](docs/design.md).
 
-## Estado del proyecto
-
-- [x] **Fase 1 · Diseño** — arquitectura, esquema y migraciones Flyway, definición de herramientas
-- [ ] **Fase 2 · Sincronizador IMAP** y tests
-- [ ] **Fase 3 · Agente** (bucle de tool use y herramientas) y tests
-- [ ] **Fase 4 · Bot de Telegram**
-- [ ] **Fase 5 · Despliegue** — Dockerfile, servicio de Compose y guía de instalación
-
-## Puesta en marcha
-
-Disponible al terminar la fase 5. La configuración irá en un fichero `.env`
-(cuentas IMAP con contraseñas de aplicación, API key de Anthropic, token del
-bot y lista de chat IDs autorizados) a partir de un `.env.example` documentado.
-
-## Licencia
+## License
 
 [MIT](LICENSE)
