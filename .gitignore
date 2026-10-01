@@ -1,0 +1,11 @@
+# Credenciales
+.env
+*.env
+!.env.example
+
+# Maven / IDE
+target/
+.idea/
+*.iml
+.vscode/
+.DS_Store

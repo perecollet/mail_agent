@@ -1,0 +1,40 @@
+{
+  "name": "find_unanswered",
+  "description": "List emails the user sent that have not received any reply from someone else yet (no later inbound message in the same thread). Newest first. Useful for 'who hasn't answered me?' or follow-ups. Default window: the last 14 days.",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "since": {
+        "type": "string",
+        "format": "date",
+        "description": "Earliest sent date, inclusive (YYYY-MM-DD). Default: 14 days ago."
+      },
+      "until": {
+        "type": "string",
+        "format": "date",
+        "description": "Latest sent date, inclusive (YYYY-MM-DD). Default: today."
+      },
+      "account": {
+        "type": "string",
+        "description": "Restrict to one account id. Omit for all."
+      },
+      "to": {
+        "type": "string",
+        "description": "Recipient address or domain, partial match."
+      },
+      "min_age_hours": {
+        "type": "integer",
+        "minimum": 0,
+        "default": 0,
+        "description": "Ignore emails sent less than this many hours ago."
+      },
+      "limit": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 25,
+        "default": 10
+      }
+    },
+    "additionalProperties": false
+  }
+}
