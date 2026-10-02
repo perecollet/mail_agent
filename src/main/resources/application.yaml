@@ -1,3 +1,53 @@
 spring:
   application:
     name: mail-agent
+  datasource:
+    url: jdbc:postgresql://${MAILAGENT_DB_HOST:localhost}:${MAILAGENT_DB_PORT:5432}/${POSTGRES_DB:mailagent}
+    username: ${POSTGRES_USER:mailagent}
+    password: ${POSTGRES_PASSWORD:}
+    hikari:
+      maximum-pool-size: 5
+
+  flyway:
+    locations: classpath:db/migration
+
+  task:
+    scheduling:
+      pool:
+        size: 1
+      thread-name-prefix: sync-
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+
+logging:
+  level:
+    root: INFO
+    dev.perecollet.mailagent: INFO
+
+mailagent:
+  timezone: Europe/Madrid
+
+  # ---------------------------------------------------------------------
+  # IMAP accounts: defined only in the environment, never here (they contain
+  # passwords). See MAILAGENT_ACCOUNTS_* in .env.example.
+  # ---------------------------------------------------------------------
+
+  # Phase 2 · IMAP synchronizer
+  sync:
+    enabled: true
+    initial-delay: PT10S
+    interval: PT15M
+    reconcile-cron: "0 0 4 * * *"
+    initial-window: P6M
+    batch-size: 50
+    flags-window: P7D
+    run-retention: P30D
+    imap-timeout: PT30S
+    max-body-chars: 100000
+    max-attachment-size: 10MB
