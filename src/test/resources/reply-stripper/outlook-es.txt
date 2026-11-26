@@ -1,0 +1,19 @@
+Buenos días,
+
+Adjunto el presupuesto revisado.
+
+Saludos
+
+-----Mensaje original-----
+De: Pau Serra <pau.serra@example.com>
+Enviado el: lunes, 3 de noviembre de 2026 18:02
+Para: Carla Font <carla.font@example.com>
+Asunto: Presupuesto
+
+¿Me puedes enviar el presupuesto revisado?
+===== expected =====
+Buenos días,
+
+Adjunto el presupuesto revisado.
+
+Saludos

@@ -1,0 +1,21 @@
+Hi Laura,
+
+Yes, Thursday at 10 works for me. I'll bring the contract.
+
+Thanks,
+Marc
+
+On Mon, 3 Nov 2026 at 09:14, Laura Vidal <laura.vidal@example.com> wrote:
+
+> Hi Marc,
+>
+> Could we meet on Thursday to review the offer?
+>
+> Laura
+===== expected =====
+Hi Laura,
+
+Yes, Thursday at 10 works for me. I'll bring the contract.
+
+Thanks,
+Marc

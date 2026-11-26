@@ -1,0 +1,6 @@
+Recibido, gracias.
+
+El 3 nov 2026, Ana Soler <ana.soler@example.com> ha escrito:
+> Te mando el contrato firmado.
+===== expected =====
+Recibido, gracias.

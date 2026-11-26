@@ -1,0 +1,15 @@
+Answers below.
+
+> Can you make it on Thursday?
+Yes, at 10.
+
+> Should I bring the contract?
+No, I have a copy.
+===== expected =====
+Answers below.
+
+> Can you make it on Thursday?
+Yes, at 10.
+
+> Should I bring the contract?
+No, I have a copy.

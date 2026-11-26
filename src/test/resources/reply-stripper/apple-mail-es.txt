@@ -1,0 +1,9 @@
+Me parece bien, adelante.
+
+Enviado desde mi iPhone
+
+> El 3 nov 2026, a las 18:02, Jordi Puig <jordi.puig@example.com> escribió:
+>
+> ¿Seguimos con la propuesta?
+===== expected =====
+Me parece bien, adelante.

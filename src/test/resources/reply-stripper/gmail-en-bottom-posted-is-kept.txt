@@ -1,0 +1,13 @@
+Thanks.
+
+On Mon, 3 Nov 2026 at 10:00, Ana Soler <ana.soler@example.com> wrote:
+> Can you check the numbers?
+
+My answer below: the numbers are correct.
+===== expected =====
+Thanks.
+
+On Mon, 3 Nov 2026 at 10:00, Ana Soler <ana.soler@example.com> wrote:
+> Can you check the numbers?
+
+My answer below: the numbers are correct.

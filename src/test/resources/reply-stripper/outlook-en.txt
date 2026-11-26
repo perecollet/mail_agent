@@ -1,0 +1,21 @@
+Hi team,
+
+Please find the updated figures below.
+
+Best regards,
+Carla
+
+________________________________
+From: Pau Serra <pau.serra@example.com>
+Sent: Monday, November 3, 2026 6:02 PM
+To: Carla Font <carla.font@example.com>
+Subject: Figures
+
+Can you send me the updated figures?
+===== expected =====
+Hi team,
+
+Please find the updated figures below.
+
+Best regards,
+Carla

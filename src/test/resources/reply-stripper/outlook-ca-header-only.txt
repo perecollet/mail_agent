@@ -1,0 +1,10 @@
+D'acord, ho reviso aquesta tarda.
+
+De: Pau Serra <pau.serra@example.com>
+Enviat: dilluns, 3 de novembre de 2026 18:02
+Per a: Carla Font <carla.font@example.com>
+Assumpte: Revisió
+
+Pots revisar el document?
+===== expected =====
+D'acord, ho reviso aquesta tarda.

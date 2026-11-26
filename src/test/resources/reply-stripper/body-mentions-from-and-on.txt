@@ -1,0 +1,5 @@
+From: the outside it looks fine, but on Monday we found two issues.
+On the bright side, nothing is lost.
+===== expected =====
+From: the outside it looks fine, but on Monday we found two issues.
+On the bright side, nothing is lost.

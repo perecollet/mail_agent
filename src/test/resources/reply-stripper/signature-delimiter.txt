@@ -1,0 +1,8 @@
+The deployment is scheduled for Friday.
+
+-- 
+Marc Ribas
+Platform team
++34 600 000 000
+===== expected =====
+The deployment is scheduled for Friday.
