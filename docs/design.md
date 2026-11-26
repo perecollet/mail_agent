@@ -77,6 +77,7 @@ dev.perecollet.mailagent
 │   │   ├── FetchedMessage, FetchedAttachment   message as read from the server, free of Jakarta Mail types
 │   │   ├── EmailRecord                normalized email, ready to store
 │   │   ├── MessageNormalizer          FetchedMessage → EmailRecord
+│   │   ├── HtmlTextConverter          HTML → text, with and without quote containers (implemented with Jsoup in the adapter)
 │   │   ├── ReplyStripper              removes quoted history and signature from plain text
 │   │   ├── SubjectNormalizer          strips Re:/Fwd:/RV:… prefixes; detects forwards
 │   │   └── MessageIds                 normalizes Message-ID / In-Reply-To / References
@@ -86,7 +87,7 @@ dev.perecollet.mailagent
 │   └── adapter/
 │       ├── in/scheduler/   SyncScheduler                      (@Scheduled)
 │       └── out/
-│           ├── imap/         AngusMailServerReader, MimeParser, HtmlToText, PdfTextExtractor, AttachmentFetcher
+│           ├── imap/         AngusMailServerReader, MimeParser, HtmlToText (implements HtmlTextConverter), PdfTextExtractor, AttachmentFetcher
 │           └── persistence/  JdbcEmailStore, JdbcSyncStateRepository
 │
 ├── agent/                             tool-use loop
@@ -236,7 +237,9 @@ Read status is refreshed for emails received within `flags-window` (7 days): `UI
 
 - **Body:** `text/plain` part if present; otherwise HTML converted with Jsoup keeping line structure.
   Quote containers in HTML (`blockquote`, `div.gmail_quote`, Outlook `#divRplyFwdMsg`…) are removed before
-  conversion, which is more reliable than guessing from text.
+  conversion, which is more reliable than guessing from text. The domain reaches Jsoup through the
+  `HtmlTextConverter` interface (`toText`, `toTextWithoutQuotes`), implemented by `HtmlToText` in the IMAP adapter;
+  forwards keep their quote containers.
 - **`body_text`:** full clean text. **`body_stripped`:** without quoted history and signature; this is what the
   model sees. `ReplyStripper` recognizes English, Spanish and Catalan formats (Gmail, Apple Mail, Outlook,
   mobile clients) and is conservative:
@@ -249,7 +252,8 @@ Read status is refreshed for emails received within `flags-window` (7 days): `UI
   surrogate pair (`body_truncated` is set). A tsvector is limited to 1 MB.
 - **Attachments:** metadata and MIME part path only. Text is extracted from PDFs under 10 MB (first 20 pages).
   File names (split on `_ - .`, so `Factura_agosto_2026.pdf` matches *agosto*) and extracted text are
-  aggregated into `email.attachment_text`, so one search can combine body and attachment terms.
+  aggregated into `email.attachment_text`, so one search can combine body and attachment terms. The aggregate is
+  cut at `max-body-chars` as well; `body_truncated` only reports truncated bodies.
 
 ## 6. Database
 
