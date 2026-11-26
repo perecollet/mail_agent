@@ -1,0 +1,11 @@
+Flight details:
+From: Barcelona
+To: Madrid
+Date: 3 Nov 2026
+See you there.
+===== expected =====
+Flight details:
+From: Barcelona
+To: Madrid
+Date: 3 Nov 2026
+See you there.

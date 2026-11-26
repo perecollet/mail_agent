@@ -1,0 +1,19 @@
+Have a look at this.
+
+---------- Forwarded message ---------
+From: Pau Serra <pau.serra@example.com>
+Date: Mon, 3 Nov 2026 at 18:02
+Subject: Offer
+To: Carla Font <carla.font@example.com>
+
+The offer is attached.
+===== expected =====
+Have a look at this.
+
+---------- Forwarded message ---------
+From: Pau Serra <pau.serra@example.com>
+Date: Mon, 3 Nov 2026 at 18:02
+Subject: Offer
+To: Carla Font <carla.font@example.com>
+
+The offer is attached.

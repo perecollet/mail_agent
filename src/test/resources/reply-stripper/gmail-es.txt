@@ -1,0 +1,17 @@
+Hola Jordi:
+
+Te confirmo que la factura ya está pagada.
+
+Un saludo,
+Ana
+
+El lun, 3 nov 2026 a las 18:02, Jordi Puig (<jordi.puig@example.com>) escribió:
+
+> Hola Ana, ¿puedes confirmar el pago de la factura de agosto?
+===== expected =====
+Hola Jordi:
+
+Te confirmo que la factura ya está pagada.
+
+Un saludo,
+Ana

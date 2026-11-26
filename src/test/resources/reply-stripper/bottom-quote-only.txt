@@ -1,0 +1,6 @@
+Agreed.
+
+> Shall we go ahead with plan B?
+> It is cheaper.
+===== expected =====
+Agreed.

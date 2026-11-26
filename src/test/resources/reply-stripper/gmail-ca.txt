@@ -1,0 +1,11 @@
+Perfecte, ho deixem per dimarts.
+
+Gràcies!
+
+El dl., 3 de nov. 2026 a les 18:02, Jordi Puig (<jordi.puig@example.com>) va escriure:
+
+> Podem canviar la reunió a dimarts?
+===== expected =====
+Perfecte, ho deixem per dimarts.
+
+Gràcies!

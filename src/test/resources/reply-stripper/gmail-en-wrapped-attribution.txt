@@ -1,0 +1,8 @@
+Sounds good, see you then.
+
+On Mon, 3 Nov 2026 at 09:14, Laura Vidal Sanchez-Ortega <
+laura.vidal@example.com> wrote:
+
+> Could we meet on Thursday?
+===== expected =====
+Sounds good, see you then.

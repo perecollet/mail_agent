@@ -1,0 +1,21 @@
+Para que lo tengas.
+
+Inicio del mensaje reenviado:
+
+De: Pau Serra <pau.serra@example.com>
+Asunto: Presupuesto
+Fecha: 3 de noviembre de 2026, 18:02
+Para: Carla Font <carla.font@example.com>
+
+Adjunto el presupuesto.
+===== expected =====
+Para que lo tengas.
+
+Inicio del mensaje reenviado:
+
+De: Pau Serra <pau.serra@example.com>
+Asunto: Presupuesto
+Fecha: 3 de noviembre de 2026, 18:02
+Para: Carla Font <carla.font@example.com>
+
+Adjunto el presupuesto.
